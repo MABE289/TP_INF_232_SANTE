@@ -4,18 +4,18 @@ import plotly.express as px
 from datetime import datetime
 
 # ==========================================
-# 1. CONFIGURATION : ORANGE GÉOMÉTRIQUE & MATÉRIEL MÉDICAL
+# 1. CONFIGURATION VISUELLE : ORANGE GÉOMÉTRIQUE & MATÉRIEL
 # ==========================================
 st.set_page_config(
-    page_title="CardioPanel Elite | Équipement Clinique", 
+    page_title="CardioPanel Elite | Diagnostic Clair", 
     page_icon="🩺", 
     layout="wide"
 )
 
-# Design CSS : Orange Brûlé + Motifs Cubes + Style Matériel
+# Design CSS : Orange Brûlé + Motifs Cubes + CORRECTIONS VISIBILITÉ
 st.markdown("""
     <style>
-    /* Fond Orange avec motifs géométriques (Cubes) */
+    /* Fond Orange avec motifs géométriques */
     .stApp {
         background-color: #d35400;
         background-image: url("https://www.transparenttextures.com/patterns/cubes.png");
@@ -28,15 +28,13 @@ st.markdown("""
         border-right: 3px solid #ff0000;
     }
     
-    /* Titres avec lueur blanche */
+    /* Titres avec lueur blanche pour ressortir */
     h1, h2 {
         color: white !important;
         text-shadow: 0px 4px 10px rgba(0,0,0,0.5);
-        font-family: 'Trebuchet MS', sans-serif;
-        text-transform: uppercase;
     }
 
-    /* Cartes de saisie : Style "Laboratoire" */
+    /* Cartes de saisie : Fond CLAIR pour lisibilité */
     .stForm {
         background-color: rgba(255, 255, 255, 0.98) !important;
         border-radius: 25px !important;
@@ -45,7 +43,7 @@ st.markdown("""
         box-shadow: 0 20px 40px rgba(0,0,0,0.4) !important;
     }
     
-    /* Bouton Rouge Vif Hyper-Visible */
+    /* Bouton Rouge Vif */
     .stButton>button {
         background: linear-gradient(90deg, #ff0000 0%, #cc0000 100%) !important;
         color: white !important;
@@ -53,18 +51,35 @@ st.markdown("""
         height: 60px;
         font-size: 22px !important;
         font-weight: 900 !important;
-        border: none !important;
-        box-shadow: 0 10px 20px rgba(255, 0, 0, 0.4) !important;
     }
-    .stButton>button:hover {
-        transform: translateY(-5px);
-        filter: brightness(1.2);
+    
+    /* --- NOUVEAUX STYLES POUR VISIBILITÉ ANALYSE --- */
+    
+    /* 1. Forcer le fond BLANC pour les zones de graphiques */
+    div[class*="stPlotlyChart"] {
+        background-color: white !important;
+        padding: 15px !important;
+        border-radius: 15px !important;
+        box-shadow: 0 10px 20px rgba(0,0,0,0.3) !important;
     }
 
-    /* Métriques blanches */
-    [data-testid="stMetricValue"] {
-        color: white !important;
-        font-size: 40px !important;
+    /* 2. Style Métriques blanches */
+    [data-testid="stMetricBlock"] {
+        background-color: rgba(255, 255, 255, 0.1) !important;
+        border-radius: 15px;
+        padding: 15px;
+    }
+    [data-testid="stMetricLabel"] { color: white !important; }
+    [data-testid="stMetricValue"] { color: white !important; font-weight: bold; }
+
+    /* 3. Forcer le tableau en BLANC et texte NOIR */
+    div[data-testid="stTable"] table {
+        background-color: white !important;
+        border-radius: 15px;
+    }
+    div[data-testid="stTable"] td, div[data-testid="stTable"] th {
+        color: black !important;
+        border: 1px solid #ddd;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -82,66 +97,53 @@ if 'sante_db' not in st.session_state:
 # ==========================================
 
 with st.sidebar:
-    st.image("https://cdn-icons-png.flaticon.com/512/822/822118.png", width=120) # Icône Hôpital
+    st.image("https://cdn-icons-png.flaticon.com/512/822/822118.png", width=120)
     st.markdown("<h2 style='color:white; text-align:center;'>CARDIO ELITE</h2>", unsafe_allow_html=True)
     st.markdown("---")
-    choix = st.radio("SÉLECTIONNER UN MODULE", ["📋 SAISIE MATÉRIEL", "📊 ANALYSE EXPERTE"])
+    choix = st.radio("MODULE", ["📋 SAISIE CLINIQUE", "📊 ANALYSE VISIBLE"])
     st.markdown("---")
-    st.image("https://cdn-icons-png.flaticon.com/512/2966/2966327.png", width=50)
+    st.success("Système Opérationnel")
 
-if choix == "📋 SAISIE MATÉRIEL":
-    # En-tête avec matériel médical
+if choix == "📋 SAISIE CLINIQUE":
+    # Partie Saisie (inchangée car déjà lisible sur fond blanc)
     c_titre, c_materiel = st.columns([0.7, 0.3])
     with c_titre:
         st.title("🩺 Unité de Mesures Vitales")
-        st.markdown("<p style='color:white; font-size:20px;'>Enregistrement via terminaux cliniques</p>", unsafe_allow_html=True)
     with c_materiel:
-        st.image("https://cdn-icons-png.flaticon.com/512/1040/1040237.png", width=150) # Image Stéthoscope
+        st.image("https://cdn-icons-png.flaticon.com/512/1040/1040237.png", width=150)
 
     with st.form("form_ultra"):
-        st.markdown("### 🧬 Paramètres de Diagnostic")
-        
         col_a, col_b = st.columns(2)
         with col_a:
-            st.image("https://cdn-icons-png.flaticon.com/512/4807/4807695.png", width=40) # Icône ID
-            pid = st.text_input("IDENTIFIANT PATIENT UNIQUE", placeholder="PAT-XXXX")
-            
-            st.image("https://cdn-icons-png.flaticon.com/512/3063/3063201.png", width=40) # Icône Tension
-            tens = st.slider("TENSION SYSTOLIQUE (mmHg)", 80, 200, 120)
-            
+            pid = st.text_input("🆔 ID PATIENT", placeholder="PAT-XXXX")
+            tens = st.slider("💓 TENSION (mmHg)", 80, 200, 120)
         with col_b:
-            st.image("https://cdn-icons-png.flaticon.com/512/3004/3004458.png", width=40) # Icône Age
-            age = st.number_input("ÂGE ACTUEL", 1, 105, 40)
-            
-            st.image("https://cdn-icons-png.flaticon.com/512/4334/4334130.png", width=40) # Icône Sang
-            chol = st.number_input("TAUX DE CHOLESTÉROL (mg/dL)", 100, 450, 190)
+            age = st.number_input("📅 ÂGE ACTUEL", 1, 105, 40)
+            chol = st.number_input("🩸 CHOLESTÉROL (mg/dL)", 100, 450, 190)
         
-        st.markdown("---")
-        st.image("https://cdn-icons-png.flaticon.com/512/2864/2864261.png", width=40) # Icône Glycémie
-        glyc = st.selectbox("STATUT DE LA GLYCÉMIE", ["Normal", "Élevé", "Critique"])
+        glyc = st.selectbox("🍏 GLYCÉMIE", ["Normal", "Élevé", "Critique"])
         
         # Le gros bouton Rouge
-        submit = st.form_submit_button("🔥 SYNCHRONISER AVEC LE SERVEUR")
+        submit = st.form_submit_button("🔥 SYNCHRONISER DONNÉES")
         
         if submit:
             if pid:
                 new_entry = {
-                    "Date": datetime.now().strftime("%H:%M"),
+                    "Date": datetime.now().strftime("%Y-%m-%d"),
                     "Patient_ID": pid, "Age": age, 
                     "Tension_Systolique": tens, "Cholesterol": chol, "Glycemie": glyc
                 }
                 st.session_state.sante_db = pd.concat([st.session_state.sante_db, pd.DataFrame([new_entry])], ignore_index=True)
                 st.balloons()
-                st.success(f"Données du patient {pid} sécurisées avec succès.")
+                st.success(f"Dossier de {pid} archivé.")
             else:
-                st.error("Erreur : L'Identifiant est obligatoire.")
+                st.error("Identifiant obligatoire.")
 
 else:
-    st.title("📊 Centre de Monitoring")
-    st.image("https://cdn-icons-png.flaticon.com/512/2785/2785239.png", width=100) # Icône Stats
+    st.title("📊 Centre d'Analyse Experte (Corrigé)")
     
     if st.session_state.sante_db.empty:
-        st.info("Aucune donnée enregistrée.")
+        st.info("💡 En attente de données patient...")
     else:
         df = st.session_state.sante_db
         
@@ -153,15 +155,29 @@ else:
         
         st.markdown("---")
         
-        # Graphiques
+        # Graphiques : Forcer le fond en clair
         ca, cb = st.columns(2)
+        
         with ca:
-            fig1 = px.histogram(df, x="Tension_Systolique", color_discrete_sequence=['#001f3f'])
-            fig1.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font_color="white")
+            # Graphique : fond CLAIR forcé
+            fig1 = px.histogram(df, x="Tension_Systolique", 
+                                title="Distribution de la Tension Artérielle", 
+                                color_discrete_sequence=['#ff0000']) # Rouge vif pour les barres
+            # Paramètres Plotly : Texte NOIR sur fond BLANC
+            fig1.update_layout(paper_bgcolor='white', plot_bgcolor='white', font_color="black")
             st.plotly_chart(fig1, use_container_width=True)
+            
         with cb:
-            fig2 = px.scatter(df, x="Age", y="Cholesterol", color_discrete_sequence=['#ff0000'])
-            fig2.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font_color="white")
+            # Graphique : fond CLAIR forcé
+            fig2 = px.scatter(df, x="Age", y="Cholesterol", 
+                              title="Corrélation Âge vs Cholestérol", 
+                              color="Glycemie", # Couleur par glycémie
+                              color_discrete_sequence=['#ff0000', '#001f3f', '#f1c40f']) # Rouge, Marine, Jaune
+            # Paramètres Plotly : Texte NOIR sur fond BLANC
+            fig2.update_layout(paper_bgcolor='white', plot_bgcolor='white', font_color="black")
             st.plotly_chart(fig2, use_container_width=True)
 
+        st.markdown("---")
+        # Forcer le tableau brut en CLAIR
+        st.markdown("### 📋 Registre Médical Brut")
         st.table(df)
